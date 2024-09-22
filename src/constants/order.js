@@ -1,0 +1,13 @@
+exports.UPDATE_ORDER_TYPE = {
+  INCREASE: "increase",
+  DECREASE: "decrease",
+};
+
+exports.ORDER_STATUS = {
+  CART: "CART",
+  PENDING: "PENDING",
+  PACKING: "PACKING",
+  DELIVERING: "DELIVERING",
+  DELIVERED: "DELIVERED",
+  CANCELLED: "CANCELLED",
+};

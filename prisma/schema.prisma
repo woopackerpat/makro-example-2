@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  firstName String?   @map("first_name")
+  lastName  String?   @map("last_name")
+  email     String    @unique
+  password  String
+  phone     String?
+  memberId  String    @map("member_id")
+  role      Role      @default(USER)
+  orders    Order[]
+  addresses Address[]
+
+  @@map("user")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Address {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @map("user_id")
+  name        String?
+  phone       String?
+  email       String
+  address     String?
+  subDistrict String? @map("sub_district")
+  district    String?
+  province    String?
+  postal      String?
+  isMain      Boolean @map("is_main")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("address")
+}
+
+model Order {
+  id            Int             @id @default(autoincrement()) @map("id")
+  total         Float           @map("total")
+  isPaid        Boolean         @default(false) @map("is_paid")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  status        Status          @default(CART) @map("status")
+  paymentMethod Payment?        @map("payment_method")
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int             @map("user_id")
+  orderProducts Order_Product[]
+
+  @@map("order")
+}
+
+enum Status {
+  CART
+  PENDING
+  PACKING
+  DELIVERING
+  DELIVERED
+  CANCELLED
+}
+
+enum Payment {
+  CARD
+  PROMPTPAY
+}
+
+model Order_Product {
+  id        Int @id @default(autoincrement())
+  orderId   Int @map("order_id")
+  productId Int @map("product_id")
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_product")
+}
+
+model Product {
+  id            Int             @id @default(autoincrement())
+  categoryId    Int             @map("category_id")
+  name          String
+  price         Float
+  stock         Int
+  detail        String?
+  length        Int?
+  width         Int?
+  height        Int?
+  weight        Int?
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  images        Product_Image[]
+  orderProducts Order_Product[]
+
+  @@map("product")
+}
+
+model Product_Image {
+  id        Int    @id @default(autoincrement())
+  productId Int    @map("product_id")
+  cid       String
+  url       String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_image")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  products Product[]
+
+  @@map("category")
+}
